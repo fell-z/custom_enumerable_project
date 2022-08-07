@@ -18,58 +18,57 @@ module Enumerable
     selected_items
   end
 
-  def my_all?
-    passed_elements = []
+  def my_all?(obj = :not_given)
+    approved_elements_count = 0
 
     my_each do |element|
-      if block_given?
-        passed_elements << element if yield(element)
-      elsif element
-        passed_elements << element
+      if obj == :not_given && !block_given?
+        approved_elements_count += 1 if element
+      else
+        obj = nil
+
+        approved_elements_count += 1 if element == obj || yield(element)
       end
     end
 
-    passed_elements == self
+    approved_elements_count == length
   end
 
-  def my_any?
-    passed_elements = []
+  def my_any?(obj = nil)
+    passed = false
 
     my_each do |element|
-      if block_given?
-        passed_elements << element if yield(element)
+      if block_given? || obj
+        break passed = true if element == obj || yield(element)
       elsif element
-        passed_elements << element
+        break passed = true
       end
     end
 
-    !passed_elements.empty?
+    passed
   end
 
-  def my_none?
-    passed_elements = []
+  def my_none?(obj = nil)
+    passed = true
 
     my_each do |element|
-      if block_given?
-        passed_elements << element if yield(element)
+      if block_given? || obj
+        break passed = false if element == obj || yield(element)
       elsif element
-        passed_elements << element
+        break passed = false
       end
     end
 
-    passed_elements.empty?
+    passed
   end
 
-  def my_count
+  def my_count(obj = nil)
+    return length unless block_given? || obj
+
     element_counter = 0
 
     my_each do |element|
-      if block_given?
-        element_counter += 1 if yield(element)
-      else
-        element_counter = length
-        break
-      end
+      element_counter += 1 if element == obj || yield(element)
     end
 
     element_counter
